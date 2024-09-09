@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Form with Payment Redirect</title>
+</head>
+<body>
+
+    <h2>Subscription Form</h2>
+
+    <form id="subscriptionForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="paymentMethod">Payment Method:</label>
+        <select id="paymentMethod" name="paymentMethod" required>
+            <option value="">Select Payment Method</option>
+            <option value="pay_online">Pay Online</option>
+            <option value="pay_later">Pay Later</option>
+        </select><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        // API details
+        const mondayApiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjQwNzgxMTExMywiYWFpIjoxMSwidWlkIjo2NDY5MTQ1MCwiaWFkIjoiMjAyNC0wOS0wOVQwNDo0NzoyMy41ODNaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjQyNDUyNDQsInJnbiI6ImFwc2UyIn0.dE0d_7MuKrYgyfXVwX4E5C1NTBCv_8dhNcEoftg_w3Y';  // Replace with your actual API key
+        const boardId = '1908104734';  // Replace with your actual Monday.com board ID
+
+        // Listen for form submission
+        document.getElementById('subscriptionForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            // Prepare the request payload
+            const query = `
+                mutation {
+                    create_item (
+                        board_id: ${boardId}, 
+                        item_name: "${name}", 
+                        column_values: "{\"email\": \"${email}\", \"payment_method\": \"${paymentMethod}\"}"
+                    ) {
+                        id
+                    }
+                }`;
+
+            // Send data to Monday.com
+            fetch("https://api.monday.com/v2", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": mondayApiKey
+                },
+                body: JSON.stringify({ query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Monday.com API Response:", data);
+
+                // Redirect based on payment method
+                if (paymentMethod === 'pay_online') {
+                    // Redirect to payment page
+                    window.location.href = "https://visaenvoy.com/regional-areas/";
+                } else {
+                    alert('Thank you for your submission! We will send further instructions to your email.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+
+</body>
+</html>
